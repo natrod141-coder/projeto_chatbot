@@ -1,0 +1,36 @@
+version: '3.8'
+
+services:
+  ollama:
+    image: ollama/ollama:latest
+    container_name: chatbot_ollama
+    ports:
+      - "11434:11434"
+    volumes:
+      - ollama_data:/root/.ollama
+    entrypoint: ["/bin/sh", "-c", "ollama serve & sleep 5 && ollama pull llama3 && wait"]
+
+  backend:
+    build: .
+    container_name: chatbot_backend
+    command: uvicorn src.backend.main:app --host 0.0.0.0 --port 8000
+    ports:
+      - "8000:8000"
+    depends_on:
+      - ollama
+    environment:
+      - OLLAMA_HOST=http://ollama:11434 
+
+  frontend:
+    build: .
+    container_name: chatbot_frontend
+    command: streamlit run src/frontend/app.py --server.address 0.0.0.0 --server.port 8501
+    ports:
+      - "8501:8501"
+    depends_on:
+      - backend
+    environment:
+      - API_URL=http://backend:8000
+
+volumes:
+  ollama_data:

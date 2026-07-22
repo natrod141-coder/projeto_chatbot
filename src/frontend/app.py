@@ -6,23 +6,23 @@ st.set_page_config(page_title="FAQ Spotify", page_icon="🎧")
 st.title("Assistente de Planos Spotify")
 st.markdown("Tire suas dúvidas sobre os planos Premium.")
 
-
-# o Streamlit recarrega a página a cada clique, usei o session_state para não perder o histórico.
 if "mensagens" not in st.session_state:
     st.session_state.mensagens = []
 
 for msg in st.session_state.mensagens:
-    with st.chat_message(msg["role"]):
+    # Escolhe o avatar correto dependendo de quem enviou a mensagem
+    icone = "👤" if msg["role"] == "user" else "🎧"
+    with st.chat_message(msg["role"], avatar=icone):
         st.markdown(msg["content"])
 
 pergunta = st.chat_input("Digite sua dúvida aqui...")
 
 if pergunta:
-    with st.chat_message("user"):
+    with st.chat_message("user", avatar="👤"):
         st.markdown(pergunta)
     st.session_state.mensagens.append({"role": "user", "content": pergunta})
 
-    with st.chat_message("assistant"):
+    with st.chat_message("assistant", avatar="🎧"):
         placeholder = st.empty()
         placeholder.markdown("Consultando a base de dados...")
         
@@ -34,7 +34,6 @@ if pergunta:
                 json={"pergunta": pergunta}
             )
             
-            # se retornar sucesso (200)
             if resposta_api.status_code == 200:
                 dados = resposta_api.json()
                 texto_resposta = dados.get("resposta", "Resposta não encontrada.")
@@ -49,5 +48,4 @@ if pergunta:
                 placeholder.markdown("Desculpe, ocorreu um erro no processamento do servidor.")
                 
         except requests.exceptions.ConnectionError:
-            # captura o erro caso a API FastAPI esteja desligada
             placeholder.markdown("Erro de conexão. Verifique se o servidor FastAPI (backend) está rodando.")

@@ -10,13 +10,13 @@ def configurar_banco_de_dados():
 
     print("2. Dividindo o texto em pedaços menores (chunks)...")
     text_splitter = RecursiveCharacterTextSplitter(
-        chunk_size=300,
-        chunk_overlap=50
+        chunk_size=1000,
+        chunk_overlap=200
     )
     textos_divididos = text_splitter.split_documents(documentos)
 
     print("3. Configurando o modelo de embeddings local...")
-    embeddings = HuggingFaceEmbeddings(model_name="all-MiniLM-L6-v2")
+    embeddings = HuggingFaceEmbeddings(model_name="sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2")
 
     print("4. Criando e salvando o banco de dados vetorial...")
     Chroma.from_documents(

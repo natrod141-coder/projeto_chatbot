@@ -5,21 +5,19 @@ from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.runnables import RunnablePassthrough
 from langchain_core.output_parsers import StrOutputParser
 
-# 1. Conexão com o Banco de Dados Vetorial
-embeddings = HuggingFaceEmbeddings(model_name="all-MiniLM-L6-v2")
+embeddings = HuggingFaceEmbeddings(model_name="sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2")
 vector_store = Chroma(persist_directory="./chroma_db", embedding_function=embeddings)
-retriever = vector_store.as_retriever(search_kwargs={"k": 3})
+retriever = vector_store.as_retriever(search_kwargs={"k": 8})
 
-# 2. Configuração do Modelo Local
-llm = ChatOllama(model="llama3")
+llm = ChatOllama(model="llama3", temperature=0)
 
-# 3. Prompt Restrito
+# Prompt Restrito 
 system_prompt = (
-    "Você é um assistente de suporte especializado nos planos do Spotify. "
-    "Responda à pergunta do usuário utilizando APENAS o contexto fornecido abaixo. "
-    "Se a resposta não estiver no contexto, diga: 'Desculpe, não tenho essa informação'. "
-    "Não invente informações em hipótese alguma.\n\n"
-    "Contexto:\n{context}"
+    "Você é um assistente de suporte do Spotify.\n"
+    "Responda à pergunta de forma direta, utilizando APENAS as informações do Contexto abaixo.\n"
+    "Se o contexto afirmar que algo é incompatível, exclusivo ou não permitido, informe isso ao usuário claramente.\n\n"
+    "Contexto:\n{context}\n\n"
+    "Se a informação exata não estiver no Contexto, responda apenas: 'Desculpe, não tenho essa informação.'"
 )
 
 prompt = ChatPromptTemplate.from_messages([
@@ -27,28 +25,30 @@ prompt = ChatPromptTemplate.from_messages([
     ("human", "{input}"),
 ])
 
-# Função auxiliar para extrair apenas o texto dos blocos encontrados
 def formatar_docs(docs):
     return "\n\n".join(doc.page_content for doc in docs)
 
-# 4. Cadeia Moderna RAG (LCEL)
-# O símbolo "|" atua como um "cano" (pipe), passando a informação de uma etapa para a outra
 rag_chain = (
     {"context": retriever | formatar_docs, "input": RunnablePassthrough()}
     | prompt
     | llm
-    | StrOutputParser() # Garante que a saída seja um texto limpo
+    | StrOutputParser()
 )
 
 def processar_pergunta(pergunta: str) -> dict:
     """
     Executa a busca para extrair fontes e gera a resposta contextualizada.
     """
-    # Passo A: Buscamos os documentos brutos para extrair de onde a informação veio
+    # Buscar os documentos brutos para extrair de onde a informação veio
     documentos_recuperados = retriever.invoke(pergunta)
     fontes = list(set([doc.metadata.get("source", "Fonte desconhecida") for doc in documentos_recuperados]))
     
-    # Passo B: Geramos a resposta passando a pergunta pelo "cano" (chain)
+    print("\n\n=== TEXTOS ENCONTRADOS PELO BANCO DE DADOS ===")
+    for i, doc in enumerate(documentos_recuperados):
+        print(f"\n[Bloco {i+1}]: {doc.page_content}")
+    print("==============================================\n\n")
+
+    #Gera a resposta passando a pergunta pelo chain
     texto_resposta = rag_chain.invoke(pergunta)
     
     return {

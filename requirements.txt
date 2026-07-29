@@ -6,3 +6,5 @@ langchain-community
 chromadb
 sentence-transformers
 pypdf
+langchain-text-splitters
+langchain-ollama

@@ -6,11 +6,35 @@ st.set_page_config(page_title="FAQ Spotify", page_icon="🎧")
 st.title("Assistente de Planos Spotify")
 st.markdown("Tire suas dúvidas sobre os planos Premium.")
 
+st.markdown(
+    """
+    <style>
+    /* Oculta o menu superior padrão do Streamlit */
+    #MainMenu {visibility: hidden;}
+    
+    /* Oculta o rodapé 'Made with Streamlit' */
+    footer {visibility: hidden;}
+    
+    /* Oculta o botão 'Deploy' no canto superior direito */
+    .stAppDeployButton {display: none;}
+    </style>
+    """,
+    unsafe_allow_html=True
+)
+
+with st.sidebar:
+    st.title("⚙️ Painel de Controle")
+    st.markdown("Bem-vindo ao assistente inteligente de planos.")
+    st.markdown("---")
+    
+    if st.button("Limpar Histórico"):
+        st.session_state.mensagens = [] 
+        st.rerun()
+
 if "mensagens" not in st.session_state:
     st.session_state.mensagens = []
 
 for msg in st.session_state.mensagens:
-    # Escolhe o avatar correto dependendo de quem enviou a mensagem
     icone = "👤" if msg["role"] == "user" else "🎧"
     with st.chat_message(msg["role"], avatar=icone):
         st.markdown(msg["content"])
@@ -34,6 +58,7 @@ if pergunta:
                 json={"pergunta": pergunta}
             )
             
+            # se retornar sucesso (200)
             if resposta_api.status_code == 200:
                 dados = resposta_api.json()
                 texto_resposta = dados.get("resposta", "Resposta não encontrada.")

@@ -9,7 +9,7 @@ embeddings = HuggingFaceEmbeddings(model_name="sentence-transformers/paraphrase-
 vector_store = Chroma(persist_directory="./chroma_db", embedding_function=embeddings)
 retriever = vector_store.as_retriever(search_kwargs={"k": 8})
 
-llm = ChatOllama(model="llama3", temperature=0)
+llm = ChatOllama(model="llama3", temperature=0, base_url="http://host.docker.internal:11434")
 
 # Prompt Restrito 
 system_prompt = (

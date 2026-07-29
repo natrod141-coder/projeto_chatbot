@@ -33,11 +33,14 @@ Certifique-se de ter o Python e o Ollama instalados na sua máquina, além de te
    python -m venv venv
    .\venv\Scripts\activate
 4. Instale as bibliotecas necessárias: 
-   ```pip install -r requirements.txt
+   ```bash 
+   pip install -r requirements.txt
 5. Inicie o servidor do Backend (FastAPI):
-   ```uvicorn src.backend.main:app --reload
+   ```bash
+   uvicorn src.backend.main:app --reload
 6. Abra um novo terminal na raiz do projeto, ative o ambiente virtual novamente e inicie a interface do Frontend (Streamlit):
-   ```streamlit run src/frontend/app.py
+   ```bash
+   streamlit run src/frontend/app.py
 
-   
+
   

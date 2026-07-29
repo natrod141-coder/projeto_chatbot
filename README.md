@@ -19,3 +19,25 @@ Certifique-se de ter o [Docker Desktop](https://www.docker.com/) instalado na su
 3. Execute o comando de orquestração:
    ```bash
    docker-compose up --build
+
+### Como executar o projeto (Localmente sem Docker)
+
+> **⚠️ IMPORTANTE - Configuração da IA:** Ao executar o projeto nativamente, o sistema não utiliza a ponte de rede do Docker. Antes de iniciar os servidores, abra o arquivo `rag_engine.py` e altere o parâmetro `base_url` do modelo de `http://host.docker.internal:11434` para o endereço local: `http://localhost:11434`.
+
+Certifique-se de ter o Python e o Ollama instalados na sua máquina, além de ter feito o download do modelo Llama 3 localmente (`ollama run llama3`).
+
+1. Clone este repositório.
+2. Abra o terminal na raiz do projeto.
+3. Crie e ative um ambiente virtual:
+   ```bash
+   python -m venv venv
+   .\venv\Scripts\activate
+4. Instale as bibliotecas necessárias: 
+   ```pip install -r requirements.txt
+5. Inicie o servidor do Backend (FastAPI):
+   ```uvicorn src.backend.main:app --reload
+6. Abra um novo terminal na raiz do projeto, ative o ambiente virtual novamente e inicie a interface do Frontend (Streamlit):
+   ```streamlit run src/frontend/app.py
+
+   
+  
